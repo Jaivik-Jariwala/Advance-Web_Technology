@@ -24,7 +24,7 @@ function add(m, n) {
   // Export the func to App
   module.exports = {
     add,
-    suntract,
+    subtract,
     multiply,
     divide,
   };
