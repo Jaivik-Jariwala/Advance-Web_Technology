@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const setupMongoConnection = require('./mongoconnection');
+const setupMongoConnection = require('./mongooseconnection');
 
 const app = express();
 
