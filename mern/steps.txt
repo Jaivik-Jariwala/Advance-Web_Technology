@@ -1,0 +1,24 @@
+mkdir webapp
+mkdir frontend
+mkdir backend
+
+FRONTEND
+
+cd frontend
+npx create-react-app
+
+cd..
+
+BACKEND
+
+cd backend
+npm init -y
+npm i mongodb express cors dotenv
+
+API
+npm init
+npm install express --save
+
+START
+npm start
+
