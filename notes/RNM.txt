@@ -1,0 +1,147 @@
+Certainly! Here's how you can create a task management app using Node.js for backend, React for frontend, and MongoDB as the database:
+
+1. **Node.js Backend**:
+
+**server.js**:
+```javascript
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const Task = require('./models/Task');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(bodyParser.json());
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/taskManager', { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error(err));
+
+// Routes
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    const task = new Task({ title, description });
+    await task.save();
+    res.status(201).json(task);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.delete('/api/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    await task.remove();
+    res.json({ message: 'Task deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+```
+
+**models/Task.js**:
+```javascript
+const mongoose = require('mongoose');
+
+const taskSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+}, { timestamps: true });
+
+module.exports = mongoose.model('Task', taskSchema);
+```
+
+2. **React Frontend**:
+
+**App.js**:
+```javascript
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get('/api/tasks');
+      setTasks(response.data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  const handleCreateTask = async () => {
+    try {
+      const response = await axios.post('/api/tasks', { title, description });
+      fetchTasks();
+      setTitle('');
+      setDescription('');
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await axios.delete(`/api/tasks/${taskId}`);
+      fetchTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Task Management App</h1>
+      <div>
+        <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <button onClick={handleCreateTask}>Create Task</button>
+      </div>
+      <ul>
+        {tasks.map(task => (
+          <li key={task._id}>
+            <h2>{task.title}</h2>
+            <p>{task.description}</p>
+            <button onClick={() => handleDeleteTask(task._id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+This example assumes you have a MongoDB database named `taskManager` running locally on the default port (`27017`). Adjust the MongoDB connection string accordingly if needed.
+
+Before running the Node.js backend, ensure you have MongoDB installed and running. Then, navigate to the backend directory and run `node server.js`. Similarly, navigate to the frontend directory and run `npm start` to start the React development server.
+
+Remember to install necessary packages using npm (`axios`, `body-parser`, `express`, `mongoose`) before running the code. Also, ensure CORS headers are properly configured if the frontend and backend are served from different origins during development.

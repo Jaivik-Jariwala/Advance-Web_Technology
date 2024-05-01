@@ -1,0 +1,113 @@
+Sure, I'll guide you through setting up MongoDB and connecting it with a Node.js backend for a task management application.
+
+1. **Install MongoDB**:
+
+   First, you need to install MongoDB on your system. You can download the MongoDB Community Server from the official MongoDB website (https://www.mongodb.com/try/download/community).
+
+2. **Start MongoDB**:
+
+   After installation, start the MongoDB server. The process to start MongoDB varies depending on your operating system. You can refer to the MongoDB documentation for detailed instructions.
+
+3. **Node.js Backend with MongoDB**:
+
+   Now, let's create a Node.js backend and connect it to MongoDB.
+
+**Step 1: Install Dependencies**:
+
+Navigate to your project directory and initialize a new Node.js project:
+```bash
+mkdir task-manager-backend
+cd task-manager-backend
+npm init -y
+```
+
+Install necessary dependencies:
+```bash
+npm install express mongoose body-parser
+```
+
+**Step 2: Set Up MongoDB Connection**:
+
+Create a `db.js` file in your project directory:
+```javascript
+// db.js
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost:27017/task-manager', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
+```
+
+**Step 3: Define Task Model**:
+
+Create a `models/Task.js` file to define the Task model:
+```javascript
+// models/Task.js
+const mongoose = require('mongoose');
+
+const taskSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  description: String,
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Task', taskSchema);
+```
+
+**Step 4: Set Up Express Server**:
+
+Create a `server.js` file to set up the Express server:
+```javascript
+// server.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const Task = require('./models/Task');
+require('./db');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(bodyParser.json());
+
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    const task = new Task({ title, description });
+    await task.save();
+    res.status(201).json(task);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+```
+
+**Step 5: Run the Server**:
+
+Run the Node.js server:
+```bash
+node server.js
+```
+
+Now, you have a basic Node.js backend connected to MongoDB. You can start building the frontend (using React or any other framework) to interact with this backend for task management functionalities.
