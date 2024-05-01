@@ -1,9 +1,7 @@
-# tasks/views.py
+# dwitter/views.py
 
-from rest_framework import viewsets
-from .models import Task
-from .serializers import TaskSerializer
+# ...
 
-class TaskViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
+def profile(request, pk):
+    profile = Profile.objects.get(pk=pk)
+    return render(request, "dwitter/profile.html", {"profile": profile})
